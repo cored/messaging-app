@@ -10,20 +10,12 @@ class MessagesController < ApplicationController
     end
 
     def create
-        @message = Message.new(message_params)
+        @message_form = MessageForm.new(message_params)
 
-        if current_user.doctor?
-            @message.doctor = current_user
-        elsif current_user.customer_care?
-            @message.customer_care = current_user
-        else
-            @message.user = current_user
-        end
-
-        if @message.save
+        if @message_form.save
             redirect_to orders_path
         else
-            flash[:error] = "Message failed to send: #{@message.errors.full_messages.join(", ")}"
+            flash[:error] = "Message failed to send: #{@message_form.errors.full_messages.join(", ")}"
             redirect_to orders_path
         end
     end
