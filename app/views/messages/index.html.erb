@@ -1,0 +1,17 @@
+<h1>Messages</h1>
+
+<% @messages.each do |message| %>
+	<div class="message">
+		<p><strong>
+			<% if message.user %>
+				<%= message.user.email %> (User)
+			<% elsif message.doctor %>
+				<%= message.doctor.email %> (Doctor)
+			<% elsif message.customer_care %>
+				<%= message.customer_care.email %> (Customer Care)
+			<% end %>:
+		</strong> <%= message.message %></p>
+	</div>
+<% end %>
+
+<%= link_to 'Back to Orders', orders_path %>

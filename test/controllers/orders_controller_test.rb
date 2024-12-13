@@ -21,7 +21,7 @@ class OrdersControllerTest < ActionDispatch::IntegrationTest
 
 	test "should create order" do
 		assert_difference("Order.count") do
-			post orders_url, params: { order: { order_items: 'Medication', total: 9.99, doctor_id: users(:two).id, user_id: @user.id } }
+			post orders_url, params: { order: { order_items: 'Medication', total: 9.99, doctor_id: users(:doctor).id, user_id: @user.id } }
 		end
 		assert_redirected_to order_url(Order.last)
 	end

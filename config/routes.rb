@@ -9,5 +9,5 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "orders#index"
-  resources :messages, only: [:create]
+  resources :messages, only: [:create, :index]
 end
