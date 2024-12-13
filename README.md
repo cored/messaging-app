@@ -40,156 +40,147 @@ We're also looking for you to write tests, but not for the entire application. W
 
 ## **Upgrading to the New Infrastructure**
 
-As part of modernizing the codebase, there are several key updates made to the infrastructure. These changes align the project with industry best practices and prepare the codebase for scalability, security, and maintainability. Below are the steps to upgrade the infrastructure and the reasoning behind these changes:
+As part of modernizing the codebase, several key updates have been made to the infrastructure. These changes align the project with industry best practices and prepare the codebase for scalability, security, and maintainability. Below are the steps to upgrade the infrastructure and the reasoning behind these changes.
 
-### 1. **Upgrade to Use StimulusReflex for Real-Time Interaction**
-
-#### Reasoning:
-In the past, the application might have used traditional HTTP requests to update the user interface. However, real-time updates are crucial for improving the user experience, especially in messaging systems. StimulusReflex allows us to handle real-time updates seamlessly with WebSocket support, making interactions faster and more engaging.
-
-#### How to Upgrade:
-- **Install the StimulusReflex Gem**:
-	Add the following gem to your `Gemfile`:
-
-	```ruby
-	gem 'stimulus_reflex', '~> 3.5'
-	```
-
-	Then run:
-	```bash
-	bundle install
-	```
-
-- **Install Stimulus and StimulusReflex JavaScript**:
-	Run the following command to install the necessary JavaScript packages:
-
-	```bash
-	bin/rails stimulus_reflex:install
-	```
-
-- **Configure JavaScript**:
-	If using Webpacker, make sure that the Stimulus and StimulusReflex controllers are properly imported and set up in your `app/javascript/packs/application.js` file:
-
-	```javascript
-	import { Application } from "stimulus"
-	import { defineControllers } from "stimulus_reflex"
-	import StimulusReflex from "stimulus_reflex"
-
-	const application = Application.start()
-	defineControllers(application)
-	```
-
-- **Replace Traditional Requests with Reflexes**:
-	In your HTML and JavaScript, replace standard form submissions or AJAX requests with Reflex calls. Example:
-
-	```javascript
-	// Increment counter via Reflex
-	this.stimulate("CounterReflex#increment")
-	```
-
-### 2. **Switch from Sprockets to TailwindCSS with Webpack**
+### 1. **Introduction of the `MessageForm` for Handling Messages**
 
 #### Reasoning:
-Sprockets was the default asset pipeline in Rails, but it has limitations when it comes to modern CSS frameworks. Using Webpack with TailwindCSS allows us to easily customize and extend our styles with modern tooling.
+The previous message creation logic was entangled within the controller, making it difficult to test and maintain. By introducing a `MessageForm` object, we separate the concerns of message creation from the controller. This allows the controller to focus solely on handling user input and responding to the client, while the form object handles business logic, including validation and message assignment.
 
-#### How to Upgrade:
-- **Install TailwindCSS**:
-	Add the following gem to your `Gemfile`:
+#### Benefits:
+- **Single Responsibility**: The `MessageForm` class is responsible solely for message creation, encapsulating logic like role-based message assignment (user, doctor, customer care).
+- **Improved Testability**: The form object simplifies testing of message creation logic since it's decoupled from the controller.
+- **Maintainability**: Clear separation of concerns makes future changes (like adding new message types or validations) easier and safer.
 
-	```ruby
-	gem "tailwindcss-rails", "~> 2.7"
-	```
+#### How it Works:
+- The `MessageForm` class collects the necessary attributes and validates them.
+- It assigns the correct `user_id`, `doctor_id`, or `customer_care_id` based on the user’s role.
+- It saves the message to the database.
 
-	Then run:
-	```bash
-	bundle install
-	```
+Example:
+```ruby
+class MessageForm
+	include ActiveModel::Model
+	attr_accessor :message, :order_id, :user_id, :doctor_id, :customer_care_id
 
-- **Install TailwindCSS via Rails**:
-	Run the following command to initialize TailwindCSS with Rails:
+	def save
+		return false unless valid?
 
-	```bash
-	rails tailwindcss:install
-	```
+		message = Message.new(message_params)
 
-- **Remove Old CSS References**:
-	Remove any outdated or conflicting CSS from your asset pipeline (e.g., `app/assets/stylesheets/application.css`) and ensure you're using the new Tailwind setup.
+		if message.save
+			true
+		else
+			false
+		end
+	end
 
-- **Use Tailwind in Views**:
-	With Tailwind now in place, you can use utility classes directly in your HTML views. For example:
+	private
 
-	```html
-	<button class="bg-blue-500 text-white p-2 rounded">Submit</button>
-	```
+	def message_params
+		{
+			message: message,
+			order_id: order_id,
+			user_id: user_id,
+			doctor_id: doctor_id,
+			customer_care_id: customer_care_id
+		}.compact # compact removes any nil values (so only valid params are passed)
+	end
+end
+```
 
-### 3. **Switch to Importmap for JavaScript Management (Rails 7+)**
+#### Trade-offs:
+- **More Code to Maintain**: The addition of a new class introduces more code. However, this trade-off is justified by the improved structure and testability of the codebase.
+- **Increased Complexity for New Developers**: For developers unfamiliar with form objects, it introduces an extra layer of abstraction. However, this is a common pattern that can simplify complex form handling in the long term.
 
-#### Reasoning:
-Rails 7 introduces `importmap` as an alternative to Webpack. If you're upgrading to Rails 7, it's recommended to use importmaps for lightweight JavaScript management. Importmap allows us to load JavaScript modules directly from CDN, reducing the need for bundling.
-
-#### How to Upgrade:
-- **Install Importmap**:
-	If you're using Rails 7, replace Webpacker with `importmap`:
-
-	```bash
-	bin/rails importmap:install
-	```
-
-- **Pin JavaScript Libraries**:
-	Pin the necessary JavaScript libraries in `config/importmap.rb`. For example:
-
-	```ruby
-	pin "application", preload: true
-	pin "stimulus", to: "stimulus.js"
-	pin "stimulus_reflex", to: "stimulus_reflex.js"
-	```
-
-- **Use JavaScript Modules**:
-	Replace Webpacker imports with `import` statements directly in your `application.js`:
-
-	```javascript
-	import "stimulus"
-	import "stimulus_reflex"
-	```
-
-### 4. **Use WebSocket for Real-Time Messaging (ActionCable)**
+### 2. **Role-Based Message Visibility**
 
 #### Reasoning:
-ActionCable provides real-time WebSocket support, allowing the system to push new messages and updates to the user without requiring them to reload the page. This is essential for the chat functionality, as it enhances the user experience by providing instant updates.
+In the original messaging system, all users (doctor, customer care, and patient) had access to all messages. However, the business requirement changed, and now the messages between doctors and patients should be hidden from customer care users, and vice versa.
 
-#### How to Upgrade:
-- **Install Redis**:
-	For production, Redis is used to back the WebSocket server. Add it to your `Gemfile`:
+#### Solution:
+- We introduced three scopes in the `Message` model (`user_messages`, `doctor_messages`, `customer_care_messages`) to differentiate which messages a user can see.
+- The new role-based access control (RBAC) is applied through these scopes, ensuring that users, doctors, and customer care agents can only see the messages relevant to them.
 
-	```ruby
-	gem "redis", "~> 4.0"
-	```
+Example:
+```ruby
+class Message < ApplicationRecord
+	belongs_to :user, optional: true
+	belongs_to :doctor, class_name: 'User', foreign_key: 'doctor_id', optional: true
+	belongs_to :order
 
-	Then run:
+	# Scope to filter messages for a user
+	scope :user_messages, ->(user) { where(user_id: user.id) }
 
-	```bash
-	bundle install
-	```
+	# Scope to filter messages for a doctor
+	scope :doctor_messages, ->(doctor) { where(doctor_id: doctor.id) }
 
-- **Configure ActionCable**:
-	Ensure your `config/cable.yml` is properly configured for both development and production:
+	# Scope to filter messages for customer care
+	scope :customer_care_messages, ->(customer_care) { where(customer_care_id: customer_care.id) }
+end
+```
 
-	```yml
-	development:
-		adapter: async
-		channel_prefix: your_app_development
+#### Benefits:
+- **Fine-grained Access Control**: By using scopes, we ensure that each user can only access messages they are authorized to view.
+- **Security**: Only the relevant parties (user, doctor, or customer care) can see specific messages, reducing potential privacy breaches.
 
-	production:
-		adapter: redis
-		url: redis://localhost:6379/1
-		channel_prefix: your_app_production
-	```
+#### Trade-offs:
+- **More Complex Queries**: Using scopes introduces more complex queries, especially when you need to filter by multiple roles or conditions. However, this is necessary to ensure secure and flexible messaging.
 
-- **Enable WebSocket in Channels**:
-	Make sure that your message and chat channels are set up to broadcast and listen for real-time updates.
+### 3. **Use of Service Objects (MessageForm) for Logic Handling**
+
+#### Reasoning:
+We wanted to follow Sandi Metz's advice about keeping classes under 100 lines and avoiding controllers with too many responsibilities. By introducing the `MessageForm` service object, we encapsulate the logic of message creation and role-based assignment, which keeps the controller concise.
+
+#### How It Works:
+The controller no longer directly handles message creation, reducing the size and complexity of the controller. Instead, it delegates the message creation logic to the `MessageForm`, which handles validation and object creation.
+
+Example:
+```ruby
+class MessagesController < ApplicationController
+	before_action :authenticate_user!
+
+	def create
+		@message_form = MessageForm.new(message_params)
+
+		if @message_form.save
+			redirect_to orders_path
+		else
+			flash[:error] = "Message failed to send: #{@message_form.errors.full_messages.join(", ")}"
+			redirect_to orders_path
+		end
+	end
+
+	private
+
+	def message_params
+		params.require(:message).permit(:message, :order_id, :user_id, :doctor_id, :customer_care_id)
+	end
+end
+```
+
+#### Benefits:
+- **Cleaner Controller**: The controller only delegates the task to the form object, making it much easier to maintain.
+- **Easier Testing**: Testing message creation becomes easier because the logic is encapsulated in a service object, which is easier to test independently.
+
+#### Trade-offs:
+- **New Abstraction**: Introducing a service object adds a layer of abstraction. Developers new to the codebase might initially find it harder to understand, but it ultimately leads to more maintainable and testable code.
 
 ---
 
-These changes are aimed at improving the scalability, performance, and maintainability of the codebase. They enable us to build a more modern application using real-time interactions, a flexible CSS framework (TailwindCSS), and a more efficient way of managing JavaScript.
+### Future Work & Scalability
 
-If you need further assistance with the migration or have any questions, feel free to reach out!
+These changes have made the system more modular and easier to scale. Here are a few ways we can continue improving the system:
+
+1. **Real-Time Messaging**: Integrating real-time messaging using ActionCable would improve user experience by pushing updates instantly as new messages are sent.
+2. **Advanced Message Filtering**: Further refine message filtering by adding roles for administrative users or implementing additional business rules (e.g., prioritizing messages).
+3. **Performance Optimization**: If the number of messages grows significantly, consider using database optimizations (indexes, pagination) to ensure the system remains performant.
+4. **Testing**: Add more tests, especially for edge cases, such as large numbers of messages or incorrect user roles.
+
+---
+
+### Conclusion
+
+By introducing a `MessageForm` object, role-based scopes, and service objects, we have made the application more maintainable, secure, and testable. While these changes add complexity, they also ensure the system is scalable and flexible in the long run. We are ready to handle growing user numbers and evolving business requirements.
+
+Feel free to reach out if you have any questions or need further assistance.

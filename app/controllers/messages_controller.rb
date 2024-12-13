@@ -2,11 +2,7 @@ class MessagesController < ApplicationController
     before_action :authenticate_user!
 
     def index
-        if current_user.customer_care?
-            @messages = Message.all # Customer care can see all messages
-        else
-            @messages = Message.where(order_id: current_user.orders.pluck(:id))
-        end
+        @messages = fetch_messages
     end
 
     def create
@@ -24,5 +20,15 @@ class MessagesController < ApplicationController
 
     def message_params
         params.require(:message).permit(:message, :order_id, :user_id, :doctor_id, :customer_care_id)
+    end
+
+    def fetch_messages
+        if current_user.customer_care?
+            Message.customer_care_messages(current_user.id)
+        elsif current_user.doctor?
+            Message.doctor_messages(current_user.id)
+        else
+            Message.user_messages(current_user.id)
+        end
     end
 end
