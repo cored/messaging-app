@@ -23,14 +23,12 @@
 
 one:
   id: 1
-  email: MyString
-  credit_card_number: MyString
-  expiry: MyString
-  cvv: MyString
+  email: "one@email.com"
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
+  is_doctor: false
 
 two:
   id: 2
-  email: MyString
-  credit_card_number: MyString
-  expiry: MyString
-  cvv: MyString
+  email: "two@email.com"
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
+  is_doctor: true

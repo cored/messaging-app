@@ -23,14 +23,14 @@
 
 one:
   id: 1
-  user: one
-  doctor: one
-  order_items: MyString
+  user_id: 1
+  doctor_id: 2
+  order_items: "Medication"
   total: 9.99
 
 two:
   id: 2
-  user: two
-  doctor: two
-  order_items: MyString
+  user_id: 1
+  doctor_id: 2
+  order_items: "Checkup"
   total: 9.99

@@ -23,16 +23,17 @@
 #  user_id    (user_id => users.id)
 #
 
+
 one:
   id: 1
-  user: one
-  doctor: one
-  order: one
-  message: MyString
+  message: "MyString"
+  user_id: 1
+  doctor_id: 2
+  order_id: 1
 
 two:
   id: 2
-  user: two
-  doctor: two
-  order: two
-  message: MyString
+  message: "MyString"
+  user_id: 1
+  doctor_id: 2
+  order_id: 2
