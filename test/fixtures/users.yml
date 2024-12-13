@@ -24,7 +24,6 @@
 one:
   id: 1
   email: MyString
-  password: MyString
   credit_card_number: MyString
   expiry: MyString
   cvv: MyString
@@ -32,7 +31,6 @@ one:
 two:
   id: 1
   email: MyString
-  password: MyString
   credit_card_number: MyString
   expiry: MyString
   cvv: MyString
