@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_12_13_183856) do
+ActiveRecord::Schema[7.0].define(version: 2024_12_13_203646) do
   create_table "messages", force: :cascade do |t|
     t.integer "user_id"
     t.integer "doctor_id"
@@ -18,6 +18,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_12_13_183856) do
     t.string "message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "customer_care_id"
     t.index ["doctor_id"], name: "index_messages_on_doctor_id"
     t.index ["order_id"], name: "index_messages_on_order_id"
     t.index ["user_id"], name: "index_messages_on_user_id"

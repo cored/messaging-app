@@ -12,7 +12,7 @@
 #  remember_created_at    :datetime
 #  reset_password_sent_at :datetime
 #  reset_password_token   :string
-#  role                   :integer          default(0), not null
+#  role                   :integer          default("user"), not null
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #
@@ -22,14 +22,23 @@
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
 #
 
-one:
+user:
   id: 1
-  email: "one@email.com"
+  email: user@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
   is_doctor: false
+  role: 0
 
-two:
+doctor:
   id: 2
-  email: "two@email.com"
+  email: doctor@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
   is_doctor: true
+  role: 1
+
+customer_care:
+  id: 3
+  email: care@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
+  is_doctor: false
+  role: 2

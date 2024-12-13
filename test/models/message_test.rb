@@ -2,13 +2,14 @@
 #
 # Table name: messages
 #
-#  id         :integer          not null, primary key
-#  message    :string
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  doctor_id  :integer
-#  order_id   :integer          not null
-#  user_id    :integer
+#  id               :integer          not null, primary key
+#  message          :string
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  customer_care_id :integer
+#  doctor_id        :integer
+#  order_id         :integer          not null
+#  user_id          :integer
 #
 # Indexes
 #
