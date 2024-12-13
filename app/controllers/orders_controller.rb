@@ -16,10 +16,21 @@ class OrdersController < ApplicationController
   def show
   end
 
+  def update
+    if @order.update(order_params)
+      redirect_to @order, notice: 'Order was successfully updated.'
+    else
+      render :edit
+    end
+  end
+
   private
 
   def set_order
     @order = Order.find(params[:id])
   end
 
+  def order_params
+    params.require(:order).permit(:order_items, :total, :doctor_id, :user_id)
+  end
 end
