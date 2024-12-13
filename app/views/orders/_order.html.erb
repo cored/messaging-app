@@ -3,7 +3,7 @@
         <h2>Order ID: <%= order.id %></h2>
         <p>Doctor: <%= render partial: "doctor", locals: { doctor: order.doctor } %></p>
         <p>Total: <%= order.total %></p>
-        <%= render partial: "order_item", collection: eval(order.order_items) %>
+        <%= render partial: "order_item", collection: order.order_items %>
         <p>Created At: <%= order.created_at %></p>
         <p>Updated At: <%= order.updated_at %></p>
     </div>
