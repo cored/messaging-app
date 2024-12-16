@@ -8,7 +8,11 @@ class OrdersController < ApplicationController
 
 	# GET /orders or /orders.json
 	def index
-		@orders = current_user.is_doctor ? current_user.doctor_orders : current_user.orders
+		@orders = if current_user.doctor?
+							current_user.doctor_orders
+							else
+								current_user.orders
+							end
 	end
 
 	# GET /orders/1 or /orders/1.json

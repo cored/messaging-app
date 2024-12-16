@@ -8,7 +8,6 @@
 #  email                  :string           default(""), not null
 #  encrypted_password     :string           default(""), not null
 #  expiry                 :string
-#  is_doctor              :boolean          default(FALSE)
 #  remember_created_at    :datetime
 #  reset_password_sent_at :datetime
 #  reset_password_token   :string
@@ -26,19 +25,16 @@ user:
   id: 1
   email: user@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
-  is_doctor: false
   role: 0
 
 doctor:
   id: 2
   email: doctor@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
-  is_doctor: true
   role: 1
 
 customer_care:
   id: 3
   email: care@example.com
   encrypted_password: <%= Devise::Encryptor.digest(User, 'Password1!') %>
-  is_doctor: false
   role: 2
