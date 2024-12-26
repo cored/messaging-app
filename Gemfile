@@ -50,3 +50,4 @@ gem "view_component", "~> 3.14"
 gem "bootsnap", require: false
 
 
+gem "rails_event_store", "~> 2.15.0"

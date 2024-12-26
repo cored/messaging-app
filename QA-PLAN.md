@@ -8,7 +8,9 @@ This updated QA Plan includes detailed steps on how to navigate to each feature 
 
 ### **Overview**
 
-The message application facilitates communication between users, doctors, and customer care representatives regarding orders. The key functionalities include sending messages, differentiating message visibility based on roles, and ensuring that only relevant parties can view specific messages. This QA plan outlines the testing scope, strategy, test cases, validation requirements, and how to navigate to each feature to perform the tests.
+The message application facilitates communication between users, doctors, and customer care representatives regarding orders.
+
+The key functionalities include sending messages, differentiating message visibility based on roles, and ensuring that only relevant parties can view specific messages. This QA plan outlines the testing scope, strategy, test cases, validation requirements, and how to navigate to each feature to perform the tests.
 
 ---
 
