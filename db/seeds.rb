@@ -9,7 +9,7 @@
 
 # Example order items
 order_items = [{
-		name: 'Rugiet ED Strong',
+		name: 'ED Strong',
 		dosage: '1 troche',
 		quantity: 3,
 		instructions: 'Take 1 troche 30 minutes before sex',
